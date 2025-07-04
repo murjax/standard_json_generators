@@ -1,0 +1,63 @@
+describe('mobile index (full)', function() {
+  beforeEach(() => {
+    cy.app('clean');
+    cy.appFactories([['create', 'user', 'admin']]);
+    cy.forceLogin({ email: 'admin@example.com' });
+    cy.viewport(375, 812);
+  });
+
+  it('renders the index with records', function() {
+    cy.appFactories([
+<% @reference_columns.each do |column| -%>
+<% test_data = @json_config["test_data"][column["name"]] -%>
+      [
+        'create',
+        '<%= column["name"] %>',
+        {
+          id: 1,
+          <%= column["display_field"] %>: '<%= test_data %>'
+        }
+      ],
+<% end -%>
+      [
+        'create',
+        '<%= @model_name_underscore %>',
+        {
+<% @json_config["columns"].each do |column| -%>
+<% test_data = @json_config["test_data"][column["name"]] -%>
+<% next unless test_data -%>
+<% if column["type"] == "reference" -%>
+          <%= column["name"] %>_id: 1,
+<% else -%>
+          <%= column["name"] %>: '<%= test_data %>',
+<% end -%>
+<% end -%>
+        }
+      ]
+    ]).then((records) => {
+      cy.visit('/<%= @model_name_plural %>');
+      cy.get('[data-test-id="<%= @model_name_underscore %>-list-item"]').should('have.length', 1);
+<% display_column = @json_config["columns"].first -%>
+<% test_data = @json_config["test_data"][display_column["name"]] -%>
+      cy.get('[data-test-id="<%= @model_name_underscore %>-list-item"]').first().should('contain', '<%= test_data %>');
+    });
+  });
+
+  it('paginates 10 per page', function() {
+    for(let i = 0; i < 15; i++) {
+      cy.appFactories([
+        ['create', '<%= @model_name_underscore %>']
+      ]);
+    }
+
+    cy.visit('/<%= @model_name_plural %>');
+    cy.get('[data-test-id="<%= @model_name_plural %>-mobile-list-container"]').get('tbody tr').should('have.length', 10);
+    cy.get('[data-test-id="pagination"]').should('contain', '1');
+    cy.get('[data-test-id="pagination"]').should('contain', '2');
+    cy.get('[data-test-id="pagination"]').should('not.contain', '3');
+    cy.get('[data-test-id="<%= @model_name_plural %>-mobile-list-container"] [data-test-id="next-page"]:first').click();
+    cy.get('[data-test-id="<%= @model_name_plural %>-mobile-list-container"]').get('tbody tr').should('have.length', 5);
+    cy.get('[data-test-id="<%= @model_name_plural %>-mobile-list-container"] [data-test-id="previous-page"]:first').click();
+    cy.get('[data-test-id="<%= @model_name_plural %>-mobile-list-container"]').get('tbody tr').should('have.length', 10);
+  });
+});

@@ -1,0 +1,63 @@
+describe('<%= @model_name_plural %> index (full)', function() {
+  beforeEach(() => {
+    cy.app('clean');
+    cy.appFactories([['create', 'user', 'admin']]);
+    cy.forceLogin({ email: 'admin@example.com' });
+  });
+
+  it('renders the index with records', function() {
+    cy.appFactories([
+<% @reference_columns.each do |column| -%>
+<% test_data = @json_config["test_data"][column["name"]] -%>
+      [
+        'create',
+        '<%= column["name"] %>',
+        {
+          id: 1,
+          <%= column["display_field"] %>: '<%= test_data %>'
+        }
+      ],
+<% end -%>
+      [
+        'create',
+        '<%= @model_name_underscore %>',
+        {
+<% @json_config["columns"].each do |column| -%>
+<% test_data = @json_config["test_data"][column["name"]] -%>
+<% next unless test_data -%>
+<% if column["type"] == "reference" -%>
+          <%= column["name"] %>_id: 1,
+<% else -%>
+          <%= column["name"] %>: '<%= test_data %>',
+<% end -%>
+<% end -%>
+        }
+      ]
+    ]).then((records) => {
+      cy.visit('/<%= @model_name_plural %>');
+<% @json_config["columns"].each do |column| -%>
+      cy.get('[data-test-id="<%= @model_name_plural %>-full-table"] thead tr').should('contain', '<%= column["name"].titleize %>');
+<% end -%>
+      cy.get('[data-test-id="<%= @model_name_plural %>-full-table"] thead tr').should('contain', 'Action');
+
+<% @json_config["columns"].each do |column| -%>
+<% test_data = @json_config["test_data"][column["name"]] -%>
+<% next unless test_data -%>
+      cy.get('[data-test-id="<%= @model_name_plural %>-full-table"]').get('tbody tr:nth-child(1)').should('contain', '<%= test_data %>');
+<% end -%>
+    });
+  });
+
+  it('paginates 10 per page', function() {
+    for(let i = 0; i < 15; i++) {
+      cy.appFactories([
+        ['create', '<%= @model_name_underscore %>']
+      ]);
+    }
+
+    cy.visit('/<%= @model_name_plural %>');
+    cy.get('[data-test-id="<%= @model_name_plural %>-full-table"]').get('tbody tr').should('have.length', 10);
+    cy.get('[data-test-id="<%= @model_name_plural %>-full-table-container"] [data-test-id="next-page"]:first').click();
+    cy.get('[data-test-id="<%= @model_name_plural %>-full-table"]').get('tbody tr').should('have.length', 5);
+  });
+});

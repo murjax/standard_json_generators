@@ -11,6 +11,8 @@ class JsonGenerator < Rails::Generators::Base
     @model_name = @json_config["model_name"]
     @model_name_underscore = @model_name.underscore
     @model_name_plural = @model_name_underscore.pluralize
+
+    @reference_columns = @json_config["columns"].filter { |column| column["type"] == "reference" }
   end
 
   def create_model
@@ -41,5 +43,15 @@ class JsonGenerator < Rails::Generators::Base
     template "new.html.erb", "#{target_directory}/app/views/#{model_name_plural}/new.html.erb"
     template "edit.html.erb", "#{target_directory}/app/views/#{model_name_plural}/edit.html.erb"
     template "show.html.erb", "#{target_directory}/app/views/#{model_name_plural}/show.html.erb"
+  end
+
+  def create_cypress_tests
+    return unless @json_config.dig("enabled_generators", "cypress")
+
+    template "show.cy.js.erb", "#{target_directory}/e2e/cypress/e2e/#{model_name_plural}/show.cy.js"
+    template "new.cy.js.erb", "#{target_directory}/e2e/cypress/e2e/#{model_name_plural}/new.cy.js"
+    template "edit.cy.js.erb", "#{target_directory}/e2e/cypress/e2e/#{model_name_plural}/edit.cy.js"
+    template "full_index.cy.js.erb", "#{target_directory}/e2e/cypress/e2e/#{model_name_plural}/full_index.cy.js"
+    template "mobile_index.cy.js.erb", "#{target_directory}/e2e/cypress/e2e/#{model_name_plural}/mobile_index.cy.js"
   end
 end
