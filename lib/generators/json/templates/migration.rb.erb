@@ -1,0 +1,14 @@
+class Create<%= @model_name_plural.titleize %> < ActiveRecord::Migration[8.0]
+  def change
+    create_table :<%= @model_name_plural %> do |t|
+<% @json_config["columns"].select { |column| column["type"] != "reference" }.each do |column| -%>
+      t.<%= column["type"]%> :<%= column["name"] %><%= column["null"] == false ? ", null: false" : "" %>
+<% end -%>
+<% @json_config["columns"].select { |column| column["type"] == "reference" }.each do |column| -%>
+      t.references :<%= column["name"] %>, index: true, foreign_key: true<%= column["null"] == false ? ", null: false" : "" %>
+<% end -%>
+
+      t.timestamps
+    end
+  end
+end

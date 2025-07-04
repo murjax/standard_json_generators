@@ -1,0 +1,54 @@
+<div class="mb-4">
+  <%%= link_to "Add <%= @model_name %>", new_<%= @model_name_underscore %>_path, class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded cursor-pointer" %>
+</div>
+
+<div
+  class="hidden md:flex md:flex-col w-full h-full overflow-scroll text-gray-700 bg-white shadow-md rounded-xl bg-clip-border"
+  data-test-id="<%= @model_name_plural %>-full-table-container"
+>
+  <%%= render partial: "layouts/pagination", locals: { records: <%= @model_name_plural %> } %>
+  <table
+    class="w-full text-left table-auto min-w-max"
+    data-test-id="<%= @model_name_plural %>-full-table"
+  >
+    <thead>
+      <tr>
+<% @json_config["columns"].each do |column| -%>
+        <th class="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
+          <p class="block text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
+            <%= column["name"].titleize %>
+          </p>
+        </th>
+<% end -%>
+        <th class="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
+          <p class="block text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
+            Action
+          </p>
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <%% <%= @model_name_plural %>.each do |<%= @model_name_underscore %>| %>
+        <tr>
+<% @json_config["columns"].each do |column| -%>
+          <td class="p-4 border-b border-blue-gray-50">
+            <p class="block text-sm antialiased font-normal leading-normal text-blue-gray-900">
+<% if column["type"] == "reference" -%>
+              <%%= <%= @model_name_underscore %>.<%= column["name"] %>.<%= column["display_field"] %> %>
+<% else -%>
+              <%%= <%= @model_name_underscore %>.<%= column["name"] %> %>
+<% end -%>
+            </p>
+          </td>
+<% end -%>
+          <td class="p-4 border-b border-blue-gray-50">
+            <%%= link_to("View", <%= @model_name_underscore %>_path(<%= @model_name_underscore %>.id), class: "block text-sm antialiased font-medium leading-normal text-blue-400") %>
+            <%%= link_to("Edit", edit_<%= @model_name_underscore %>_path(<%= @model_name_underscore %>.id), class: "block text-sm antialiased font-medium leading-normal text-blue-400") %>
+            <%%= link_to("Delete", <%= @model_name_underscore %>_path(<%= @model_name_underscore %>.id), method: "delete", data: { turbo_method: :delete, turbo_confirm: "Are you sure?" }, class: "block text-sm antialiased font-medium leading-normal text-red-400") %>
+          </td>
+        </tr>
+      <%% end %>
+    </tbody>
+  </table>
+  <%%= render partial: "layouts/pagination", locals: { records: <%= @model_name_plural %> } %>
+</div>

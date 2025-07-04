@@ -1,0 +1,12 @@
+<div
+  class="grid grid-cols-1 sm:grid-cols-2 gap-4 p-2 md:hidden"
+  data-test-id="<%= @model_name_plural %>-mobile-list-container"
+>
+  <%%= render partial: "layouts/pagination", locals: { records: <%= @model_name_plural %> } %>
+  <%% <%= @model_name_plural %>.each do |<%= @model_name_underscore %>| %>
+    <%%= link_to(<%= @model_name_underscore %>_path(<%= @model_name_underscore %>.id), class: "bg-white shadow-md p-4 mb-4 rounded-lg", data: { test_id: "<%= @model_name_underscore %>-list-item" }) do %>
+      <p class="text-xl font-semibold mb-2"><%%= <%= @model_name_underscore %>.<%= @json_config["primary_field"] %> %></p>
+    <%% end %>
+  <%% end %>
+  <%%= render partial: "layouts/pagination", locals: { records: <%= @model_name_plural %> } %>
+</div>

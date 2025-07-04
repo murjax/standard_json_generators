@@ -1,0 +1,16 @@
+{
+  "model_name": "Order",
+  "target_directory": "../my_app",
+  "columns": [
+    {"name": "number", "type": "integer", "null": false},
+    {"name": "user", "type": "reference", "null": false, "display_field": "email"},
+    {"name": "item", "type": "reference", "null": false, "display_field": "name"}
+  ],
+  "primary_field": "number",
+  "enabled_generators": {
+    "model": true,
+    "migration": true,
+    "controller": true,
+    "views": true
+  }
+}

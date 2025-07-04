@@ -1,0 +1,61 @@
+class <%= @model_name_plural.titleize %>Controller < ApplicationController
+  def index
+    @<%= @model_name_plural %> = BaseIndexFilter.new(records: <%= @model_name %>, params:, sort_field: :<%= @json_config["primary_field"] %>, search_field: :<%= @json_config["primary_field"] %>).call
+
+    respond_to do |format|
+      format.html do
+      end
+      format.json do
+        render json: {data: @<%= @model_name_plural %>.map(&:attributes)}
+      end
+    end
+  end
+
+  def show
+    @<%= @model_name_underscore %> = <%= @model_name %>.find(params[:id])
+  end
+
+  def new
+    @<%= @model_name_underscore %> = <%= @model_name %>.new
+  end
+
+  def create
+    @<%= @model_name_underscore %> = <%= @model_name %>.new(permitted_params)
+
+    if @<%= @model_name_underscore %>.save
+      redirect_to <%= @model_name_underscore %>_path(@<%= @model_name_underscore %>)
+    else
+      render :new
+    end
+  end
+
+  def edit
+    @<%= @model_name_underscore %> = <%= @model_name %>.find(params[:id])
+  end
+
+  def update
+    @<%= @model_name_underscore %> = <%= @model_name %>.find(params[:id])
+
+    @<%= @model_name_underscore %>.assign_attributes(permitted_params)
+
+    if @<%= @model_name_underscore %>.save
+      redirect_to <%= @model_name_underscore %>_path(@<%= @model_name_underscore %>)
+    else
+      render :edit
+    end
+  end
+
+  def destroy
+    <%= @model_name_underscore %> = <%= @model_name %>.find(params[:id])
+
+    <%= @model_name_underscore %>.destroy
+    redirect_to <%= @model_name_plural %>_path
+  end
+
+  private
+
+  def permitted_params
+<% permitted_columns = @json_config["columns"].map { |column| column["type"] == "reference" ? ":#{column["name"]}_id" : ":#{column["name"]}"}.join(", ") -%>
+    params.require(:<%= @model_name_underscore %>).permit(<%= permitted_columns %>)
+  end
+end
