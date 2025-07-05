@@ -1,19 +1,5 @@
-class JsonGenerator < Rails::Generators::Base
+class JsonGenerator < JsonGeneratorCore::Generators::JsonBase
   source_root File.expand_path("templates", __dir__)
-
-  argument :json_file, type: :string
-  attr_reader :json_config, :target_directory, :model_name, :model_name_plural, :model_name_underscore
-
-  def read_file
-    data = File.read(json_file)
-    @json_config = JSON.parse(data)
-    @target_directory = @json_config["target_directory"] || Rails.root
-    @model_name = @json_config["model_name"]
-    @model_name_underscore = @model_name.underscore
-    @model_name_plural = @model_name_underscore.pluralize
-
-    @reference_columns = @json_config["columns"].filter { |column| column["type"] == "reference" }
-  end
 
   def create_model
     return unless @json_config.dig("enabled_generators", "model")
