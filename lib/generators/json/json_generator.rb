@@ -3,6 +3,7 @@ class JsonGenerator < JsonGeneratorCore::Generators::JsonBase
 
   def setup
     @markdown = []
+    @presence_columns = @json_config["columns"].filter { |column| column["null"] == false }
   end
 
   def find_existing_columns
@@ -18,27 +19,85 @@ class JsonGenerator < JsonGeneratorCore::Generators::JsonBase
     end
 
     @existing_columns = columns
-    @new_columns = @json_config["columns"].reject { |column| @existing_columns.include?(column["name"]) }
+    @new_columns = @json_config["columns"].reject do |column|
+      column_ref = (column["type"] == "reference") ? "#{column["name"]}_id" : column["name"]
+      @existing_columns.include?(column_ref)
+    end
   end
 
-  # def create_model
-  #   return unless @json_config.dig("enabled_generators", "model")
-  #
-  #   template "model.rb.erb", "#{target_directory}/app/models/#{@model_name_underscore}.rb"
-  # end
-  #
-  # def create_migration
-  #   return unless @json_config.dig("enabled_generators", "migration")
-  #
-  #   template "migration.rb.erb", "#{target_directory}/db/migrate/#{Time.now.utc.strftime("%Y%m%d%H%M%S")}_create_#{@model_name_plural}.rb"
-  # end
-  #
-  # def create_controller
-  #   return unless @json_config.dig("enabled_generators", "controller")
-  #
-  #   template "controller.rb.erb", "#{target_directory}/app/controllers/#{@model_name_plural}_controller.rb"
-  # end
-  #
+  def create_model
+    return unless @json_config.dig("enabled_generators", "model")
+
+    path = "#{target_directory}/app/models/#{@model_name_underscore}.rb"
+    if @json_config["print_additions_to_markdown"]
+      code_fragments = []
+
+      @new_columns.each do |column|
+        next unless column["type"] == "reference"
+
+        code_fragments.push(
+          <<~RUBY
+            belongs_to :#{column["name"]}
+          RUBY
+        )
+      end
+
+      if @presence_columns.any?
+        joined_columns = @presence_columns.map { |column| ":#{column["name"]}" }.join(", ")
+
+        code_fragments.push(
+          <<~RUBY
+            validates #{joined_columns}, presence: true
+          RUBY
+        )
+      end
+
+      markdown_output = <<~MARKDOWN
+        #{path}
+        ```
+        #{code_fragments.join("\n")}
+        ```
+      MARKDOWN
+
+      @markdown.push(markdown_output)
+    else
+      template "model.rb.erb", path
+    end
+  end
+
+  def create_migration
+    return unless @json_config.dig("enabled_generators", "migration")
+    return if @json_config["print_additions_to_markdown"]
+
+    template "migration.rb.erb", "#{target_directory}/db/migrate/#{Time.now.utc.strftime("%Y%m%d%H%M%S")}_create_#{@model_name_plural}.rb"
+  end
+
+  def create_controller
+    return unless @json_config.dig("enabled_generators", "controller")
+
+    path = "#{target_directory}/app/controllers/#{@model_name_plural}_controller.rb"
+    if @json_config["print_additions_to_markdown"]
+      permitted_columns = @json_config["columns"].map do |column|
+        (column["type"] == "reference") ? ":#{column["name"]}_id" : ":#{column["name"]}"
+      end.join(", ")
+
+      code_fragment = <<~RUBY
+        params.require(:<%= @model_name_underscore %>).permit(#{permitted_columns})
+      RUBY
+
+      markdown_output = <<~MARKDOWN
+        #{path}
+        ```
+        #{code_fragment}
+        ```
+      MARKDOWN
+
+      @markdown.push(markdown_output)
+    else
+      template "controller.rb.erb", path
+    end
+  end
+
   def create_views
     return unless @json_config.dig("enabled_generators", "views")
 
@@ -85,8 +144,10 @@ class JsonGenerator < JsonGeneratorCore::Generators::JsonBase
 
       markdown_output = <<~MARKDOWN
         #{path}
+        ```
         #{table_headers.join("\n")}
         #{table_columns.join("\n")}
+        ```
       MARKDOWN
 
       @markdown.push(markdown_output)
@@ -135,7 +196,9 @@ class JsonGenerator < JsonGeneratorCore::Generators::JsonBase
 
       markdown_output = <<~MARKDOWN
         #{path}
+        ```
         #{inputs.join("\n")}
+        ```
       MARKDOWN
 
       @markdown.push(markdown_output)
@@ -196,7 +259,9 @@ class JsonGenerator < JsonGeneratorCore::Generators::JsonBase
 
       markdown_output = <<~MARKDOWN
         #{path}
+        ```
         #{fields.join("\n")}
+        ```
       MARKDOWN
 
       @markdown.push(markdown_output)
