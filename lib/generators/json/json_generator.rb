@@ -29,13 +29,11 @@ class JsonGenerator < JsonGeneratorCore::Generators::JsonBase
     return unless @json_config.dig("enabled_generators", "model")
 
     path = "#{target_directory}/app/models/#{@model_name_underscore}.rb"
-    if @json_config["print_additions_to_markdown"]
-      code_fragments = []
-
+    template_with_markdown(path, "model.rb.erb") do |fragments|
       @new_columns.each do |column|
         next unless column["type"] == "reference"
 
-        code_fragments.push(
+        fragments.push(
           <<~RUBY
             belongs_to :#{column["name"]}
           RUBY
@@ -45,56 +43,39 @@ class JsonGenerator < JsonGeneratorCore::Generators::JsonBase
       if @presence_columns.any?
         joined_columns = @presence_columns.map { |column| ":#{column["name"]}" }.join(", ")
 
-        code_fragments.push(
+        fragments.push(
           <<~RUBY
             validates #{joined_columns}, presence: true
           RUBY
         )
       end
-
-      markdown_output = <<~MARKDOWN
-        #{path}
-        ```
-        #{code_fragments.join("\n")}
-        ```
-      MARKDOWN
-
-      @markdown.push(markdown_output)
-    else
-      template "model.rb.erb", path
     end
   end
 
   def create_migration
     return unless @json_config.dig("enabled_generators", "migration")
-    return if @json_config["print_additions_to_markdown"]
 
-    template "migration.rb.erb", "#{target_directory}/db/migrate/#{Time.now.utc.strftime("%Y%m%d%H%M%S")}_create_#{@model_name_plural}.rb"
+    if @existing_columns.length.positive? && @new_columns.length != @existing_columns.length
+      template "new_column_migration.rb.erb", "#{target_directory}/db/migrate/#{Time.now.utc.strftime("%Y%m%d%H%M%S")}_add_columns_to_#{@model_name_plural}.rb"
+    else
+      template "migration.rb.erb", "#{target_directory}/db/migrate/#{Time.now.utc.strftime("%Y%m%d%H%M%S")}_create_#{@model_name_plural}.rb"
+    end
   end
 
   def create_controller
     return unless @json_config.dig("enabled_generators", "controller")
 
     path = "#{target_directory}/app/controllers/#{@model_name_plural}_controller.rb"
-    if @json_config["print_additions_to_markdown"]
+    template_with_markdown(path, "controller.rb.erb") do |fragments|
       permitted_columns = @json_config["columns"].map do |column|
         (column["type"] == "reference") ? ":#{column["name"]}_id" : ":#{column["name"]}"
       end.join(", ")
 
-      code_fragment = <<~RUBY
-        params.require(:<%= @model_name_underscore %>).permit(#{permitted_columns})
-      RUBY
-
-      markdown_output = <<~MARKDOWN
-        #{path}
-        ```
-        #{code_fragment}
-        ```
-      MARKDOWN
-
-      @markdown.push(markdown_output)
-    else
-      template "controller.rb.erb", path
+      fragments.push(
+        <<~RUBY
+          params.require(:<%= @model_name_underscore %>).permit(#{permitted_columns})
+        RUBY
+      )
     end
   end
 
@@ -107,7 +88,7 @@ class JsonGenerator < JsonGeneratorCore::Generators::JsonBase
     end
 
     path = "#{target_directory}/app/views/#{model_name_plural}/_full_table.html.erb"
-    if @json_config["print_additions_to_markdown"]
+    template_with_markdown(path, "full_table.html.erb") do |fragments|
       table_headers = []
       table_columns = []
 
@@ -142,26 +123,15 @@ class JsonGenerator < JsonGeneratorCore::Generators::JsonBase
         table_columns.push(table_column)
       end
 
-      markdown_output = <<~MARKDOWN
-        #{path}
-        ```
-        #{table_headers.join("\n")}
-        #{table_columns.join("\n")}
-        ```
-      MARKDOWN
-
-      @markdown.push(markdown_output)
-    else
-      template "full_table.html.erb", path
+      fragments.push(table_headers.join("\n"))
+      fragments.push(table_columns.join("\n"))
     end
 
     path = "#{target_directory}/app/views/#{model_name_plural}/_mobile_list.html.erb"
-    unless @json_config["print_additions_to_markdown"]
-      template "mobile_list.html.erb", path
-    end
+    template_with_markdown(path, "mobile_list.html.erb")
 
     path = "#{target_directory}/app/views/#{model_name_plural}/_form.html.erb"
-    if @json_config["print_additions_to_markdown"]
+    template_with_markdown(path, "form.html.erb") do |fragments|
       inputs = []
       @new_columns.each do |column|
         if ["integer", "string"].include?(column["type"])
@@ -194,30 +164,17 @@ class JsonGenerator < JsonGeneratorCore::Generators::JsonBase
         end
       end
 
-      markdown_output = <<~MARKDOWN
-        #{path}
-        ```
-        #{inputs.join("\n")}
-        ```
-      MARKDOWN
-
-      @markdown.push(markdown_output)
-    else
-      template "form.html.erb", path
+      fragments.push(inputs.join("\n"))
     end
 
     path = "#{target_directory}/app/views/#{model_name_plural}/new.html.erb"
-    unless @json_config["print_additions_to_markdown"]
-      template "new.html.erb", path
-    end
+    template_with_markdown(path, "new.html.erb")
 
     path = "#{target_directory}/app/views/#{model_name_plural}/edit.html.erb"
-    unless @json_config["print_additions_to_markdown"]
-      template "edit.html.erb", path
-    end
+    template_with_markdown(path, "edit.html.erb")
 
     path = "#{target_directory}/app/views/#{model_name_plural}/show.html.erb"
-    if @json_config["print_additions_to_markdown"]
+    template_with_markdown(path, "show.html.erb") do |fragments|
       fields = []
       @new_columns.each do |column|
         if column["type"] == "reference"
@@ -257,33 +214,243 @@ class JsonGenerator < JsonGeneratorCore::Generators::JsonBase
         end
       end
 
-      markdown_output = <<~MARKDOWN
-        #{path}
-        ```
-        #{fields.join("\n")}
-        ```
-      MARKDOWN
-
-      @markdown.push(markdown_output)
-    else
-      template "show.html.erb", path
+      fragments.push(fields.join("\n"))
     end
   end
 
-  # def create_cypress_tests
-  #   return unless @json_config.dig("enabled_generators", "cypress")
-  #
-  #   template "show.cy.js.erb", "#{target_directory}/e2e/cypress/e2e/#{model_name_plural}/show.cy.js"
-  #   template "new.cy.js.erb", "#{target_directory}/e2e/cypress/e2e/#{model_name_plural}/new.cy.js"
-  #   template "edit.cy.js.erb", "#{target_directory}/e2e/cypress/e2e/#{model_name_plural}/edit.cy.js"
-  #   template "full_index.cy.js.erb", "#{target_directory}/e2e/cypress/e2e/#{model_name_plural}/full_index.cy.js"
-  #   template "mobile_index.cy.js.erb", "#{target_directory}/e2e/cypress/e2e/#{model_name_plural}/mobile_index.cy.js"
-  # end
+  def create_cypress_tests
+    return unless @json_config.dig("enabled_generators", "cypress")
+
+    path = "#{target_directory}/e2e/cypress/e2e/#{model_name_plural}/show.cy.js"
+    template_with_markdown(path, "show.cy.js.erb") do |fragments|
+      column_fields = @json_config["columns"].map do |column|
+        test_data = @json_config["test_data"][column["name"]]
+        next unless test_data
+
+        if column["type"] == "reference"
+          "#{column["name"]}_id: 1"
+        else
+          "#{column["name"]}: #{test_data}"
+        end
+      end.select { |data| data.present? }
+      fragments.push(
+        <<~JS
+          [
+            'create',
+            '#{@model_name_underscore}',
+            {
+              #{column_fields.join(",\n    ")}
+            }
+          ]
+        JS
+      )
+
+      assertions = @json_config["columns"].map do |column|
+        next if column["type"] == "reference"
+        test_data = @json_config["test_data"][column["name"]]
+        next unless test_data
+
+        "cy.get('[data-test-id=\"#{@model_name_underscore}-info\"]').first().should('contain', '#{test_data}');"
+      end.filter { |assertion| assertion.present? }
+
+      fragments.push(
+        <<~JS
+          #{assertions.join("\n")}
+        JS
+      )
+    end
+
+    path = "#{target_directory}/e2e/cypress/e2e/#{model_name_plural}/new.cy.js"
+    template_with_markdown(path, "new.cy.js.erb") do |fragments|
+      @reference_columns.each do |column|
+        fragments.push(
+          <<~JS
+            ['create', '#{column["name"]}', { #{column["display_field"]}: '#{@json_config["test_data"][column["name"]]}' }],
+          JS
+        )
+      end
+
+      actions = @json_config["columns"].map do |column|
+        test_data = @json_config["test_data"][column["name"]]
+        next unless test_data
+        input_action = (column["type"] == "reference") ? "select" : "type"
+        field_id = (column["type"] == "reference") ? "##{@model_name_underscore}_#{column["name"]}_id" : "##{@model_name_underscore}_#{column["name"]}"
+
+        "cy.get('#{field_id}').#{input_action}('#{test_data}');"
+      end.filter { |action| action.present? }
+
+      fragments.push(
+        <<~JS
+          #{actions.join("\n")}
+        JS
+      )
+    end
+
+    path = "#{target_directory}/e2e/cypress/e2e/#{model_name_plural}/edit.cy.js"
+    template_with_markdown(path, "edit.cy.js.erb") do |fragments|
+      @reference_columns.each do |column|
+        fragments.push(
+          <<~JS
+            ['create', '#{column["name"]}', { #{column["display_field"]}: '#{@json_config["test_data"][column["name"]]}' }],
+          JS
+        )
+      end
+
+      actions = @json_config["columns"].map do |column|
+        test_data = @json_config["test_data"][column["name"]]
+        next unless test_data
+        input_action = (column["type"] == "reference") ? "select" : "clear().type"
+        field_id = (column["type"] == "reference") ? "##{@model_name_underscore}_#{column["name"]}_id" : "##{@model_name_underscore}_#{column["name"]}"
+
+        "cy.get('#{field_id}').#{input_action}('#{test_data}');"
+      end.filter { |action| action.present? }
+
+      fragments.push(
+        <<~JS
+          #{actions.join("\n")}
+        JS
+      )
+    end
+
+    path = "#{target_directory}/e2e/cypress/e2e/#{model_name_plural}/full_index.cy.js"
+    template_with_markdown(path, "full_index.cy.js.erb") do |fragments|
+      @reference_columns.each do |column|
+        test_data = @json_config["test_data"][column["name"]]
+
+        fragments.push(
+          <<~JS
+            [
+              'create',
+              '#{column["name"]}',
+              {
+                id: 1,
+                #{column["display_field"]}: '#{test_data}'
+              }
+          JS
+        )
+      end
+
+      column_fields = @json_config["columns"].map do |column|
+        test_data = @json_config["test_data"][column["name"]]
+        next unless test_data
+
+        if column["type"] == "reference"
+          "#{column["name"]}_id: 1"
+        else
+          "#{column["name"]}: #{test_data}"
+        end
+      end.filter { |data| data.present? }
+      fragments.push(
+        <<~JS
+          [
+            'create',
+            '#{@model_name_underscore}',
+            {
+              #{column_fields.join(",\n    ")}
+            }
+          ]
+        JS
+      )
+
+      header_assertions = @json_config["columns"].map do |column|
+        "cy.get('[data-test-id=\"#{@model_name_plural}-full-table\"] thead tr').should('contain', '#{column["name"].titleize}');"
+      end
+      fragments.push(
+        <<~JS
+          #{header_assertions.join("\n")}
+        JS
+      )
+
+      row_assertions = @json_config["columns"].map do |column|
+        test_data = @json_config["test_data"][column["name"]]
+        next unless test_data
+
+        "cy.get('[data-test-id=\"#{@model_name_plural}-full-table\"]').get('tbody tr:nth-child(1)').should('contain', '#{test_data}');"
+      end.filter { |assertion| assertion.present? }
+      fragments.push(
+        <<~JS
+          #{row_assertions.join("\n")}
+        JS
+      )
+    end
+
+    path = "#{target_directory}/e2e/cypress/e2e/#{model_name_plural}/mobile_index.cy.js"
+    template_with_markdown(path, "mobile_index.cy.js.erb") do |fragments|
+      @reference_columns.each do |column|
+        test_data = @json_config["test_data"][column["name"]]
+
+        fragments.push(
+          <<~JS
+            [
+              'create',
+              '#{column["name"]}',
+              {
+                id: 1,
+                #{column["display_field"]}: '#{test_data}'
+              }
+          JS
+        )
+      end
+
+      column_fields = @json_config["columns"].map do |column|
+        test_data = @json_config["test_data"][column["name"]]
+        next unless test_data
+
+        if column["type"] == "reference"
+          "#{column["name"]}_id: 1"
+        else
+          "#{column["name"]}: #{test_data}"
+        end
+      end.filter { |data| data.present? }
+      fragments.push(
+        <<~JS
+          [
+            'create',
+            '#{@model_name_underscore}',
+            {
+              #{column_fields.join(",\n    ")}
+            }
+          ]
+        JS
+      )
+
+      display_column = @json_config["columns"].first
+      test_data = @json_config["test_data"][display_column["name"]]
+      fragments.push(
+        <<~JS
+          cy.get('[data-test-id="#{@model_name_underscore}-list-item"]').first().should('contain', '#{test_data}');
+        JS
+      )
+    end
+  end
 
   def wrapup
     if @json_config["print_additions_to_markdown"]
       final_markdown = @markdown.join("\n")
       File.write("generator_output.md", final_markdown)
+    end
+  end
+
+  private
+
+  def template_with_markdown(path, template_name, &block)
+    if @json_config["print_additions_to_markdown"]
+      fragments = []
+
+      block&.call(fragments)
+
+      return unless fragments.length.positive?
+
+      @markdown.push(
+        <<~MARKDOWN
+          #{path}
+          ```
+          #{fragments.join("\n")}
+          ```
+        MARKDOWN
+      )
+    else
+      template template_name, path
     end
   end
 end

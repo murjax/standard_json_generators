@@ -1,0 +1,11 @@
+class AddColumnsTo<%= @model_name_plural.titleize %> < ActiveRecord::Migration[8.0]
+  def change
+<% @new_columns.each do |column| -%>
+<% if column["type"] == "reference" -%>
+    add_reference :<%= @model_name_plural %>, :<%= column["name"] %>, index: true, foreign_key: true<%= column["null"] == false ? ", null: false": "" %>
+<% else -%>
+    add_column :<%= @model_name_plural %>, :<%= column["name"] %>, :<%= column["type"] %><%= column["null"] == false ? ", null: false" : "" %>
+<% end -%>
+<% end -%>
+  end
+end
