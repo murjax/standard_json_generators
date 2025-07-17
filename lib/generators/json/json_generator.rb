@@ -7,12 +7,24 @@ class JsonGenerator < JsonGeneratorCore::Generators::JsonBase
   end
 
   def find_existing_columns
+    unless File.exist?("#{target_directory}/db/schema.rb")
+      @existing_columns = []
+      @new_columns = @json_config["columns"]
+      return
+    end
+
     schema = File.read("#{target_directory}/db/schema.rb")
 
-    pattern = /create_table\s+"#{@model_name_underscore}".*?do\s*\|t\|(.*?)^\s*end/m
+    pattern = /create_table\s+"#{@model_name_plural}".*?do\s*\|t\|(.*?)^\s*end/m
     match = schema.scan(pattern)
 
     columns = []
+
+    unless match[0].present?
+      @existing_columns = []
+      @new_columns = @json_config["columns"]
+      return
+    end
 
     match[0][0].scan(/^\s*t\.(\w+)\s+"([^"]+)"/) do |_type, name|
       columns.push(name)
@@ -427,7 +439,7 @@ class JsonGenerator < JsonGeneratorCore::Generators::JsonBase
   def wrapup
     if @json_config["print_additions_to_markdown"]
       final_markdown = @markdown.join("\n")
-      File.write("generator_output.md", final_markdown)
+      File.write("#{target_directory}/generator_output.md", final_markdown)
     end
   end
 

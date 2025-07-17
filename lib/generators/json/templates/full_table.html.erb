@@ -43,12 +43,20 @@
 <% end -%>
           <td class="p-4 border-b border-blue-gray-50">
             <%%= link_to("View", <%= @model_name_underscore %>_path(<%= @model_name_underscore %>.id), class: "block text-sm antialiased font-medium leading-normal text-blue-400") %>
+<% if @json_config["skip_authorization"] -%>
+            <%%= link_to("Edit", edit_<%= @model_name_underscore %>_path(<%= @model_name_underscore %>.id), class: "block text-sm antialiased font-medium leading-normal text-blue-400") %>
+<% else -%>
             <%% if policy(<%= @model_name_underscore %>).edit? %>
               <%%= link_to("Edit", edit_<%= @model_name_underscore %>_path(<%= @model_name_underscore %>.id), class: "block text-sm antialiased font-medium leading-normal text-blue-400") %>
             <%% end %>
+<% end -%>
+<% if @json_config["skip_authorization"] -%>
+            <%%= link_to("Delete", <%= @model_name_underscore %>_path(<%= @model_name_underscore %>.id), method: "delete", data: { turbo_method: :delete, turbo_confirm: "Are you sure?" }, class: "block text-sm antialiased font-medium leading-normal text-red-400") %>
+<% else -%>
             <%% if policy(<%= @model_name_underscore %>).destroy? %>
               <%%= link_to("Delete", <%= @model_name_underscore %>_path(<%= @model_name_underscore %>.id), method: "delete", data: { turbo_method: :delete, turbo_confirm: "Are you sure?" }, class: "block text-sm antialiased font-medium leading-normal text-red-400") %>
             <%% end %>
+<% end -%>
           </td>
         </tr>
       <%% end %>

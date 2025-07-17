@@ -4,7 +4,9 @@ class <%= @model_name_plural.titleize %>Controller < ApplicationController
 
     respond_to do |format|
       format.html do
+<% unless @json_config["skip_authorization"] -%>
         authorize <%= @model_name %>
+<% end -%>
       end
       format.json do
         render json: {data: @<%= @model_name_plural %>.map(&:attributes)}
@@ -14,17 +16,22 @@ class <%= @model_name_plural.titleize %>Controller < ApplicationController
 
   def show
     @<%= @model_name_underscore %> = <%= @model_name %>.find(params[:id])
+<% unless @json_config["skip_authorization"] -%>
     authorize @<%= @model_name_underscore %>
+<% end -%>
   end
 
   def new
     @<%= @model_name_underscore %> = <%= @model_name %>.new
+<% unless @json_config["skip_authorization"] -%>
     authorize @<%= @model_name_underscore %>
+<% end -%>
   end
 
   def create
+<% unless @json_config["skip_authorization"] -%>
     authorize <%= @model_name %>
-
+<% end -%>
     @<%= @model_name_underscore %> = <%= @model_name %>.new(permitted_params)
 
     if @<%= @model_name_underscore %>.save
@@ -36,13 +43,16 @@ class <%= @model_name_plural.titleize %>Controller < ApplicationController
 
   def edit
     @<%= @model_name_underscore %> = <%= @model_name %>.find(params[:id])
+<% unless @json_config["skip_authorization"] -%>
     authorize @<%= @model_name_underscore %>
+<% end -%>
   end
 
   def update
     @<%= @model_name_underscore %> = <%= @model_name %>.find(params[:id])
+<% unless @json_config["skip_authorization"] -%>
     authorize @<%= @model_name_underscore %>
-
+<% end -%>
     @<%= @model_name_underscore %>.assign_attributes(permitted_params)
 
     if @<%= @model_name_underscore %>.save
@@ -54,7 +64,9 @@ class <%= @model_name_plural.titleize %>Controller < ApplicationController
 
   def destroy
     <%= @model_name_underscore %> = <%= @model_name %>.find(params[:id])
+<% unless @json_config["skip_authorization"] -%>
     authorize <%= @model_name_underscore %>
+<% end -%>
 
     <%= @model_name_underscore %>.destroy
     redirect_to <%= @model_name_plural %>_path
