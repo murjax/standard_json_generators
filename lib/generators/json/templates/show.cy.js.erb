@@ -22,7 +22,7 @@ describe('<%= @model_name_plural %> show', function() {
         'create',
         '<%= @model_name_underscore %>',
         {
-<% @json_config["columns"].each do |column| -%>
+<% @columns.each do |column| -%>
 <% test_data = @json_config["test_data"][column["name"]] -%>
 <% next unless test_data -%>
 <% if column["type"] == "reference" -%>
@@ -35,7 +35,7 @@ describe('<%= @model_name_plural %> show', function() {
       ]
     ]).then(() => {
       cy.visit('/<%= @model_name_plural %>/1');
-<% @json_config["columns"].each do |column| -%>
+<% @columns.each do |column| -%>
 <% test_data = @json_config["test_data"][column["name"]] -%>
 <% next unless test_data -%>
       cy.get('[data-test-id="<%= @model_name_underscore %>-info"]').first().should('contain', '<%= test_data %>');
