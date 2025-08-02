@@ -12,7 +12,7 @@ describe('<%= @model_name_plural %> new', function() {
 <% end -%>
     ]).then((records) => {
       cy.visit('/<%= @model_name_plural %>/new');
-<% @json_config["columns"].each do |column| -%>
+<% @columns.each do |column| -%>
 <% test_data = @json_config["test_data"][column["name"]] -%>
 <% next unless test_data -%>
 <% input_action = column["type"] == "reference" ? "select" : "type" -%>

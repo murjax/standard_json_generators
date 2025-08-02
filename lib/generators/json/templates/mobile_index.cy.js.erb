@@ -23,7 +23,7 @@ describe('mobile index (full)', function() {
         'create',
         '<%= @model_name_underscore %>',
         {
-<% @json_config["columns"].each do |column| -%>
+<% @columns.each do |column| -%>
 <% test_data = @json_config["test_data"][column["name"]] -%>
 <% next unless test_data -%>
 <% if column["type"] == "reference" -%>
@@ -37,7 +37,7 @@ describe('mobile index (full)', function() {
     ]).then((records) => {
       cy.visit('/<%= @model_name_plural %>');
       cy.get('[data-test-id="<%= @model_name_underscore %>-list-item"]').should('have.length', 1);
-<% display_column = @json_config["columns"].first -%>
+<% display_column = @columns.first -%>
 <% test_data = @json_config["test_data"][display_column["name"]] -%>
       cy.get('[data-test-id="<%= @model_name_underscore %>-list-item"]').first().should('contain', '<%= test_data %>');
     });

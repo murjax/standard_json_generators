@@ -13,7 +13,7 @@
   >
     <thead>
       <tr>
-<% @json_config["columns"].each do |column| -%>
+<% @columns.each do |column| -%>
         <th class="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
           <p class="block text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
             <%= column["name"].titleize %>
@@ -30,7 +30,7 @@
     <tbody>
       <%% <%= @model_name_plural %>.each do |<%= @model_name_underscore %>| %>
         <tr>
-<% @json_config["columns"].each do |column| -%>
+<% @columns.each do |column| -%>
           <td class="p-4 border-b border-blue-gray-50">
             <p class="block text-sm antialiased font-normal leading-normal text-blue-gray-900">
 <% if column["type"] == "reference" -%>

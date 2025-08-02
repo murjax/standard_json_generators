@@ -1,9 +1,9 @@
 class <%= @model_name %> < ApplicationRecord
-<% @json_config["columns"].select { |column| column["type"] == "reference" }.each do |column| -%>
+<% @columns.select { |column| column["type"] == "reference" }.each do |column| -%>
   belongs_to :<%= column["name"] %>
 <% end -%>
 <%
-  presence_columns = @json_config["columns"]
+  presence_columns = @columns
     .select { |column| column["null"] == false }
     .map { |column| ":#{column["name"]}" }
     .join(", ")
