@@ -19,7 +19,7 @@
 <% @columns.select { |column| column["type"] == "reference" }.map do |column| -%>
     <div class="flex flex-col mb-4">
       <%%= form.label :<%= column["name"] %>, required: true, class: "block mb-2 text-sm font-medium text-gray-900" %>
-      <%%= form.select :<%= column["name"] %>_id, <%= column["name"].camelize %>.all.collect { |<%= column["name"] %>| [<%= column["name"] %>.<%= column["display_field"] %>, <%= column["name"] %>.id] }, { prompt: "Select a <%= column["name"] %>" } %>
+      <%%= form.select :<%= column["name"] %>_id, <%= (column["class_name"] || column["name"]).camelize %>.all.collect { |<%= column["name"] %>| [<%= column["name"] %>.<%= column["display_field"] %>, <%= column["name"] %>.id] }, { prompt: "Select a <%= column["name"] %>" } %>
     </div>
 <% end -%>
 

@@ -5,7 +5,11 @@ class Create<%= @model_name_plural.titleize %> < ActiveRecord::Migration[8.0]
       t.<%= column["type"]%> :<%= column["name"] %><%= column["null"] == false ? ", null: false" : "" %>
 <% end -%>
 <% @columns.select { |column| column["type"] == "reference" }.each do |column| -%>
+<% if column["class_name"].present? -%>
+      t.references :<%= column["name"] %>, index: true, foreign_key: { to_table: :<%= column["class_name"].underscore.pluralize %> }<%= column["null"] == false ? ", null: false" : "" %>
+<% else -%>
       t.references :<%= column["name"] %>, index: true, foreign_key: true<%= column["null"] == false ? ", null: false" : "" %>
+<% end -%>
 <% end -%>
 
       t.timestamps

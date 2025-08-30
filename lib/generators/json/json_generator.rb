@@ -17,7 +17,7 @@ class JsonGenerator < JsonGeneratorCore::Generators::JsonBase
   def create_migration
     return unless @json_config.dig("enabled_generators", "migration")
 
-    if @existing_columns.length.positive? && @new_columns.length != @existing_columns.length
+    if @json_config["new_columns_only"].present? && @existing_columns.length.positive? && @new_columns.length != @existing_columns.length
       template_with_markdown "new_column_migration.rb.erb", "db/migrate/#{Time.now.utc.strftime("%Y%m%d%H%M%S")}_add_columns_to_#{@model_name_plural}.rb"
     else
       template_with_markdown "migration.rb.erb", "db/migrate/#{Time.now.utc.strftime("%Y%m%d%H%M%S")}_create_#{@model_name_plural}.rb"
