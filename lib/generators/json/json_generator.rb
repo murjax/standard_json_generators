@@ -8,12 +8,6 @@ class JsonGenerator < JsonGeneratorCore::Generators::JsonBase
     @presence_columns = @columns.filter { |column| column["null"] == false }
   end
 
-  def create_model
-    return unless @json_config.dig("enabled_generators", "model")
-
-    template_with_markdown "model.rb.erb", "app/models/#{@model_name_underscore}.rb"
-  end
-
   def create_migration
     return unless @json_config.dig("enabled_generators", "migration")
 
@@ -22,6 +16,16 @@ class JsonGenerator < JsonGeneratorCore::Generators::JsonBase
     else
       template_with_markdown "migration.rb.erb", "db/migrate/#{Time.now.utc.strftime("%Y%m%d%H%M%S")}_create_#{@model_name_plural}.rb"
     end
+  end
+
+  def filter_migration_only_columns
+    @columns = @columns.filter { |column| !column["migration_only"] }
+  end
+
+  def create_model
+    return unless @json_config.dig("enabled_generators", "model")
+
+    template_with_markdown "model.rb.erb", "app/models/#{@model_name_underscore}.rb"
   end
 
   def create_controller
