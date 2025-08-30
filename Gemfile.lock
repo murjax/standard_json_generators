@@ -1,5 +1,6 @@
-PATH
-  remote: ../json_generator_core
+GIT
+  remote: https://github.com/murjax/json_generator_core
+  revision: cb16458c90e90e7b4aeaf6d5b75828a26291c7f3
   specs:
     json_generator_core (0.1.0)
       rails (>= 6.0.0)
