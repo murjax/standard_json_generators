@@ -16,7 +16,7 @@
 <% @columns.each do |column| -%>
         <th class="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
           <p class="block text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
-            <%= column["name"].titleize %>
+            <%= (column["display_name"] || column["name"]).titleize %>
           </p>
         </th>
 <% end -%>
@@ -35,6 +35,8 @@
             <p class="block text-sm antialiased font-normal leading-normal text-blue-gray-900">
 <% if column["type"] == "reference" -%>
               <%%= <%= @model_name_underscore %>.<%= column["name"] %>.<%= column["display_field"] %> %>
+<% elsif column["formatter"] == "money" -%>
+              <%%= <%= @model_name_underscore %>.<%= column["display_name"] %>.format %>
 <% else -%>
               <%%= <%= @model_name_underscore %>.<%= column["name"] %> %>
 <% end -%>

@@ -6,8 +6,8 @@
   ) do |form| %>
 <% @columns.select { |column| ["integer", "string"].include?(column["type"]) }.map do |column| -%>
     <div class="flex flex-col mb-4">
-      <%%= form.label :<%= column["name"] %>, required: true, class: "block mb-2 text-sm font-medium text-gray-900" %>
-      <%%= form.text_field :<%= column["name"] %>, class: "border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" %>
+      <%%= form.label :<%= column["display_name"] || column["name"] %>, required: true, class: "block mb-2 text-sm font-medium text-gray-900" %>
+      <%%= form.text_field :<%= column["display_name"] || column["name"] %>, class: "border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" %>
     </div>
 <% end -%>
 <% @columns.select { |column| column["type"] == "text" }.map do |column| -%>

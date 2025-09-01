@@ -75,7 +75,7 @@ class <%= @model_name_plural.titleize %>Controller < ApplicationController
   private
 
   def permitted_params
-<% permitted_columns = @columns.map { |column| column["type"] == "reference" ? ":#{column["name"]}_id" : ":#{column["name"]}"}.join(", ") -%>
+<% permitted_columns = @columns.map { |column| column["type"] == "reference" ? ":#{column["name"]}_id" : ":#{column["display_name"] || column["name"]}"}.join(", ") -%>
     params.require(:<%= @model_name_underscore %>).permit(<%= permitted_columns %>)
   end
 end

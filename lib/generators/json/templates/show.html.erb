@@ -65,6 +65,8 @@
             <p class="block text-sm antialiased font-normal leading-normal text-blue-gray-900">
 <% if column["type"] == "reference" -%>
               <%%= @<%= @model_name_underscore %>.<%= column["name"] %>.<%= column["display_field"] %> %>
+<% elsif column["formatter"] == "money" -%>
+              <%%= @<%= @model_name_underscore %>.<%= column["display_name"] %>.format %>
 <% else -%>
               <%%= @<%= @model_name_underscore %>.<%= column["name"] %> %>
 <% end -%>
