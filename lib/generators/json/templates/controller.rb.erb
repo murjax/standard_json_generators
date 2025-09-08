@@ -1,4 +1,4 @@
-class <%= @model_name_plural.titleize %>Controller < ApplicationController
+class <%= @model_name.pluralize %>Controller < ApplicationController
   def index
     @<%= @model_name_plural %> = BaseIndexFilter.new(records: <%= @model_name %>, params:, sort_field: :<%= @json_config["primary_field"] %>, search_field: :<%= @json_config["primary_field"] %>).call
 
