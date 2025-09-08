@@ -1,12 +1,11 @@
 class <%= @model_name %> < ApplicationRecord
+  <%= @json_config["model_append"] %>
 <% @columns.select { |column| column["type"] == "reference" }.each do |column| -%>
   belongs_to :<%= column["name"] %><%= column["class_name"].present? ? ", class_name: \"#{column["class_name"]}\"" : nil %>
 <% end -%>
-
 <% @columns.select { |column| column["formatter"] == "money" }.each do |column| -%>
   monetize :<%= column["name"] %>
 <% end -%>
-
 <%
   presence_columns = @columns
     .select { |column| column["null"] == false }
