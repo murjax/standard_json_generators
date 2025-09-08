@@ -12,9 +12,19 @@ class JsonGenerator < JsonGeneratorCore::Generators::JsonBase
     return unless @json_config.dig("enabled_generators", "migration")
 
     if @json_config["new_columns_only"].present? && @existing_columns.length.positive? && @new_columns.length != @existing_columns.length
-      template_with_markdown "new_column_migration.rb.erb", "db/migrate/#{Time.now.utc.strftime("%Y%m%d%H%M%S")}_add_columns_to_#{@model_name_plural}.rb"
+      template_with_markdown(
+        template_name: "new_column_migration.rb.erb",
+        path: "db/migrate/#{Time.now.utc.strftime("%Y%m%d%H%M%S")}_add_columns_to_#{@model_name_plural}.rb"
+      )
+      template_with_markdown(
+        template_name: "new_column_migration.rb.erb",
+        path: "db/migrate/#{Time.now.utc.strftime("%Y%m%d%H%M%S")}_add_columns_to_#{@model_name_plural}.rb"
+      )
     else
-      template_with_markdown "migration.rb.erb", "db/migrate/#{Time.now.utc.strftime("%Y%m%d%H%M%S")}_create_#{@model_name_plural}.rb"
+      template_with_markdown(
+        template_name: "migration.rb.erb",
+        path: "db/migrate/#{Time.now.utc.strftime("%Y%m%d%H%M%S")}_create_#{@model_name_plural}.rb"
+      )
     end
   end
 
@@ -25,35 +35,77 @@ class JsonGenerator < JsonGeneratorCore::Generators::JsonBase
   def create_model
     return unless @json_config.dig("enabled_generators", "model")
 
-    template_with_markdown "model.rb.erb", "app/models/#{@model_name_underscore}.rb"
+    template_with_markdown(
+      template_name: "model.rb.erb",
+      path: "app/models/#{@model_name_underscore}.rb"
+    )
   end
 
   def create_controller
     return unless @json_config.dig("enabled_generators", "controller")
 
-    template_with_markdown "controller.rb.erb", "app/controllers/#{@model_name_plural}_controller.rb"
+    template_with_markdown(
+      template_name: "controller.rb.erb",
+      path: "app/controllers/#{@model_name_plural}_controller.rb"
+    )
   end
 
   def create_views
     return unless @json_config.dig("enabled_generators", "views")
 
-    template_with_markdown "index.html.erb", "app/views/#{@model_name_plural}/index.html.erb"
-    template_with_markdown "full_table.html.erb", "app/views/#{@model_name_plural}/_full_table.html.erb"
-    template_with_markdown "mobile_list.html.erb", "app/views/#{@model_name_plural}/_mobile_list.html.erb"
-    template_with_markdown "form.html.erb", "app/views/#{@model_name_plural}/_form.html.erb"
-    template_with_markdown "new.html.erb", "app/views/#{@model_name_plural}/new.html.erb"
-    template_with_markdown "edit.html.erb", "app/views/#{@model_name_plural}/edit.html.erb"
-    template_with_markdown "show.html.erb", "app/views/#{@model_name_plural}/show.html.erb"
+    template_with_markdown(
+      template_name: "index.html.erb",
+      path: "app/views/#{@model_name_plural}/index.html.erb"
+    )
+    template_with_markdown(
+      template_name: "full_table.html.erb",
+      path: "app/views/#{@model_name_plural}/_full_table.html.erb"
+    )
+    template_with_markdown(
+      template_name: "mobile_list.html.erb",
+      path: "app/views/#{@model_name_plural}/_mobile_list.html.erb"
+    )
+    template_with_markdown(
+      template_name: "form.html.erb",
+      path: "app/views/#{@model_name_plural}/_form.html.erb"
+    )
+    template_with_markdown(
+      template_name: "new.html.erb",
+      path: "app/views/#{@model_name_plural}/new.html.erb"
+    )
+    template_with_markdown(
+      template_name: "edit.html.erb",
+      path: "app/views/#{@model_name_plural}/edit.html.erb"
+    )
+    template_with_markdown(
+      template_name: "show.html.erb",
+      path: "app/views/#{@model_name_plural}/show.html.erb"
+    )
   end
 
   def create_cypress_tests
     return unless @json_config.dig("enabled_generators", "cypress")
 
-    template_with_markdown "show.cy.js.erb", "e2e/cypress/e2e/#{@model_name_plural}/show.cy.js"
-    template_with_markdown "new.cy.js.erb", "e2e/cypress/e2e/#{@model_name_plural}/new.cy.js"
-    template_with_markdown "edit.cy.js.erb", "e2e/cypress/e2e/#{@model_name_plural}/edit.cy.js"
-    template_with_markdown "full_index.cy.js.erb", "e2e/cypress/e2e/#{@model_name_plural}/full_index.cy.js"
-    template_with_markdown "mobile_index.cy.js.erb", "e2e/cypress/e2e/#{@model_name_plural}/mobile_index.cy.js"
+    template_with_markdown(
+      template_name: "show.cy.js.erb",
+      path: "e2e/cypress/e2e/#{@model_name_plural}/show.cy.js"
+    )
+    template_with_markdown(
+      template_name: "new.cy.js.erb",
+      path: "e2e/cypress/e2e/#{@model_name_plural}/new.cy.js"
+    )
+    template_with_markdown(
+      template_name: "edit.cy.js.erb",
+      path: "e2e/cypress/e2e/#{@model_name_plural}/edit.cy.js"
+    )
+    template_with_markdown(
+      template_name: "full_index.cy.js.erb",
+      path: "e2e/cypress/e2e/#{@model_name_plural}/full_index.cy.js"
+    )
+    template_with_markdown(
+      template_name: "mobile_index.cy.js.erb",
+      path: "e2e/cypress/e2e/#{@model_name_plural}/mobile_index.cy.js"
+    )
   end
 
   def save_markdown
@@ -95,7 +147,7 @@ class JsonGenerator < JsonGeneratorCore::Generators::JsonBase
     end
   end
 
-  def template_with_markdown(template_name, path)
+  def template_with_markdown(template_name:, path:)
     if @json_config["save_to_markdown"]
       template template_name, "temp/#{path}"
       content = File.read("temp/#{path}")
