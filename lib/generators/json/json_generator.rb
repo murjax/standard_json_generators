@@ -16,10 +16,6 @@ class JsonGenerator < JsonGeneratorCore::Generators::JsonBase
         template_name: "new_column_migration.rb.erb",
         path: "db/migrate/#{Time.now.utc.strftime("%Y%m%d%H%M%S")}_add_columns_to_#{@model_name_plural}.rb"
       )
-      template_with_markdown(
-        template_name: "new_column_migration.rb.erb",
-        path: "db/migrate/#{Time.now.utc.strftime("%Y%m%d%H%M%S")}_add_columns_to_#{@model_name_plural}.rb"
-      )
     else
       template_with_markdown(
         template_name: "migration.rb.erb",
@@ -55,7 +51,8 @@ class JsonGenerator < JsonGeneratorCore::Generators::JsonBase
 
     template_with_markdown(
       template_name: "index.html.erb",
-      path: "app/views/#{@model_name_plural}/index.html.erb"
+      path: "app/views/#{@model_name_plural}/index.html.erb",
+      use_for_new_columns: false
     )
     template_with_markdown(
       template_name: "full_table.html.erb",
@@ -71,11 +68,13 @@ class JsonGenerator < JsonGeneratorCore::Generators::JsonBase
     )
     template_with_markdown(
       template_name: "new.html.erb",
-      path: "app/views/#{@model_name_plural}/new.html.erb"
+      path: "app/views/#{@model_name_plural}/new.html.erb",
+      use_for_new_columns: false
     )
     template_with_markdown(
       template_name: "edit.html.erb",
-      path: "app/views/#{@model_name_plural}/edit.html.erb"
+      path: "app/views/#{@model_name_plural}/edit.html.erb",
+      use_for_new_columns: false
     )
     template_with_markdown(
       template_name: "show.html.erb",
@@ -147,7 +146,9 @@ class JsonGenerator < JsonGeneratorCore::Generators::JsonBase
     end
   end
 
-  def template_with_markdown(template_name:, path:)
+  def template_with_markdown(template_name:, path:, use_for_new_columns: true)
+    return if @json_config["new_columns_only"] && !use_for_new_columns
+
     if @json_config["save_to_markdown"]
       template template_name, "temp/#{path}"
       content = File.read("temp/#{path}")
