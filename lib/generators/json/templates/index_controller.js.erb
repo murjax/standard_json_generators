@@ -1,0 +1,51 @@
+import { Controller } from "@hotwired/stimulus";
+import {
+  openModal,
+  closeModal,
+  populateForm,
+  fetchRecord,
+  saveRecord
+} from 'custom/forms';
+
+export default class extends Controller {
+  static targets = [
+    "<%= @model_name_camel %>Form"
+  ];
+
+  initialize() {
+    this.openModal = openModal;
+    this.closeModal = closeModal;
+    this.populateForm = populateForm;
+    this.fetchRecord = fetchRecord;
+    this.saveRecord = saveRecord;
+  }
+
+  add<%= @model_name %>(event) {
+    event.preventDefault();
+
+    const newForm = this.<%= @model_name_camel %>FormTarget.cloneNode(true);
+    this.openModal(newForm);
+  }
+
+  async edit<%= @model_name %>(event) {
+    event.preventDefault();
+
+    const <%= @model_name_camel %>Data = await this.fetchRecord(event.params.id, '<%= @model_name_underscore %>', '<%= @model_name_plural %>');
+    const <%= @model_name_camel %> = <%= @model_name_camel %>Data['<%= @model_name_underscore %>']
+
+    const newForm = this.<%= @model_name_camel %>FormTarget.cloneNode(true);
+    newForm.setAttribute('action', `/<%= @model_name_plural %>/${<%= @model_name_camel %>.id}`);
+    newForm.setAttribute('method', 'put');
+
+    this.populateForm(newForm, '<%= @model_name_underscore %>', <%= @model_name_camel %>);
+
+    this.openModal(newForm);
+  }
+
+  save<%= @model_name %>(event) {
+    event.preventDefault();
+
+    const form = event.target.parentElement;
+    this.saveRecord(form, '<%= @model_name_underscore %>');
+  }
+}

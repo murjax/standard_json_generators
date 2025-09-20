@@ -6,6 +6,7 @@ class JsonGenerator < JsonGeneratorCore::Generators::JsonBase
     find_existing_columns
     @columns = @new_columns if @json_config["new_columns_only"]
     @presence_columns = @columns.filter { |column| column["null"] == false }
+    @model_name_camel = @model_name.camelize(:lower)
   end
 
   def create_migration
@@ -46,6 +47,25 @@ class JsonGenerator < JsonGeneratorCore::Generators::JsonBase
     )
   end
 
+  def create_api_controller
+    return unless @json_config.dig("enabled_generators", "api_controller")
+
+    template_with_markdown(
+      template_name: "api_controller.rb.erb",
+      path: "app/controllers/api/#{@model_name_plural}_controller.rb"
+    )
+  end
+
+  def create_stimulus_index_controller
+    return unless @json_config.dig("enabled_generators", "stimulus_index_controller")
+
+    template_with_markdown(
+      template_name: "index_controller.js.erb",
+      path: "app/javascript/controllers/#{@model_name_plural}_index_controller.js",
+      use_for_new_columns: false
+    )
+  end
+
   def create_views
     return unless @json_config.dig("enabled_generators", "views")
 
@@ -66,19 +86,32 @@ class JsonGenerator < JsonGeneratorCore::Generators::JsonBase
       template_name: "form.html.erb",
       path: "app/views/#{@model_name_plural}/_form.html.erb"
     )
-    template_with_markdown(
-      template_name: "new.html.erb",
-      path: "app/views/#{@model_name_plural}/new.html.erb",
-      use_for_new_columns: false
-    )
-    template_with_markdown(
-      template_name: "edit.html.erb",
-      path: "app/views/#{@model_name_plural}/edit.html.erb",
-      use_for_new_columns: false
-    )
+
+    unless @json_config.dig("use_modals_for_forms")
+      template_with_markdown(
+        template_name: "new.html.erb",
+        path: "app/views/#{@model_name_plural}/new.html.erb",
+        use_for_new_columns: false
+      )
+      template_with_markdown(
+        template_name: "edit.html.erb",
+        path: "app/views/#{@model_name_plural}/edit.html.erb",
+        use_for_new_columns: false
+      )
+    end
+
     template_with_markdown(
       template_name: "show.html.erb",
       path: "app/views/#{@model_name_plural}/show.html.erb"
+    )
+  end
+
+  def create_form_functions
+    return unless @json_config.dig("enabled_generators", "form_functions")
+
+    template_with_markdown(
+      template_name: "form_functions.js",
+      path: "app/javascript/custom/forms.js"
     )
   end
 

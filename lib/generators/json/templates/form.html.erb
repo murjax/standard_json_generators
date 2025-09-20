@@ -2,6 +2,7 @@
   <%%= form_with(
     model: <%= @model_name_underscore %>,
     local: true,
+    data: local_assigns[:form_data],
     class: "w-3/4"
   ) do |form| %>
 <% @columns.select { |column| ["integer", "string"].include?(column["type"]) }.map do |column| -%>
@@ -23,6 +24,12 @@
     </div>
 <% end -%>
 
-    <%%= form.submit class: "w-full bg-blue-500 hover:bg-blue-700 text-white font-bold mt-4 py-2 px-4 rounded cursor-pointer" %>
+    <%%=
+      form.submit(
+        "Save",
+        class: "w-full bg-blue-500 hover:bg-blue-700 text-white font-bold mt-4 py-2 px-4 rounded cursor-pointer",
+        data: local_assigns[:submit_data] || {}
+      )
+    %>
   <%% end %>
 </div>

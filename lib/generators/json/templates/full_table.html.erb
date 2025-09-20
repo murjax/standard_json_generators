@@ -1,68 +1,107 @@
-<div class="mb-4">
-  <%%= link_to "Add <%= @model_name %>", new_<%= @model_name_underscore %>_path, class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded cursor-pointer" %>
-</div>
+<div data-controller="<%= @model_name_underscore.dasherize.pluralize %>-index">
+  <div class="mb-4">
+  <% if @json_config["use_modals_for_forms"] -%>
+    <button
+      class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded cursor-pointer"
+      data-action="click-><%= @model_name_underscore.dasherize.pluralize %>-index#add<%= @model_name %>"
+    >
+      Add <%= @model_name.titleize %>
+    </button>
+  <% else -%>
+    <%%= link_to "Add <%= @model_name %>", new_<%= @model_name_underscore %>_path, class: "bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded cursor-pointer" %>
+  <% end -%>
+  </div>
 
-<div
-  class="hidden md:flex md:flex-col w-full h-full overflow-scroll text-gray-700 bg-white shadow-md rounded-xl bg-clip-border"
-  data-test-id="<%= @model_name_plural %>-full-table-container"
->
-  <%%= render partial: "layouts/pagination", locals: { records: <%= @model_name_plural %> } %>
-  <table
-    class="w-full text-left table-auto min-w-max"
-    data-test-id="<%= @model_name_plural %>-full-table"
+  <div
+    class="hidden md:flex md:flex-col w-full h-full overflow-scroll text-gray-700 bg-white shadow-md rounded-xl bg-clip-border"
+    data-test-id="<%= @model_name_plural %>-full-table-container"
   >
-    <thead>
-      <tr>
-<% @columns.each do |column| -%>
-        <th class="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
-          <p class="block text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
-            <%= (column["display_name"] || column["name"]).titleize %>
-          </p>
-        </th>
-<% end -%>
-        <th class="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
-          <p class="block text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
-            Action
-          </p>
-        </th>
-      </tr>
-    </thead>
-    <tbody>
-      <%% <%= @model_name_plural %>.each do |<%= @model_name_underscore %>| %>
+    <%%= render partial: "layouts/pagination", locals: { records: <%= @model_name_plural %> } %>
+    <table
+      class="w-full text-left table-auto min-w-max"
+      data-test-id="<%= @model_name_plural %>-full-table"
+    >
+      <thead>
         <tr>
-<% @columns.each do |column| -%>
-          <td class="p-4 border-b border-blue-gray-50">
-            <p class="block text-sm antialiased font-normal leading-normal text-blue-gray-900">
-<% if column["type"] == "reference" -%>
-              <%%= <%= @model_name_underscore %>.<%= column["name"] %>.<%= column["display_field"] %> %>
-<% elsif column["formatter"] == "money" -%>
-              <%%= <%= @model_name_underscore %>.<%= column["display_name"] %>.format %>
-<% else -%>
-              <%%= <%= @model_name_underscore %>.<%= column["name"] %> %>
-<% end -%>
+  <% @columns.each do |column| -%>
+          <th class="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
+            <p class="block text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
+              <%= (column["display_name"] || column["name"]).titleize %>
             </p>
-          </td>
-<% end -%>
-          <td class="p-4 border-b border-blue-gray-50">
-            <%%= link_to("View", <%= @model_name_underscore %>_path(<%= @model_name_underscore %>.id), class: "block text-sm antialiased font-medium leading-normal text-blue-400") %>
-<% if @json_config["skip_authorization"] -%>
-            <%%= link_to("Edit", edit_<%= @model_name_underscore %>_path(<%= @model_name_underscore %>.id), class: "block text-sm antialiased font-medium leading-normal text-blue-400") %>
-<% else -%>
-            <%% if policy(<%= @model_name_underscore %>).edit? %>
-              <%%= link_to("Edit", edit_<%= @model_name_underscore %>_path(<%= @model_name_underscore %>.id), class: "block text-sm antialiased font-medium leading-normal text-blue-400") %>
-            <%% end %>
-<% end -%>
-<% if @json_config["skip_authorization"] -%>
-            <%%= link_to("Delete", <%= @model_name_underscore %>_path(<%= @model_name_underscore %>.id), method: "delete", data: { turbo_method: :delete, turbo_confirm: "Are you sure?" }, class: "block text-sm antialiased font-medium leading-normal text-red-400") %>
-<% else -%>
-            <%% if policy(<%= @model_name_underscore %>).destroy? %>
-              <%%= link_to("Delete", <%= @model_name_underscore %>_path(<%= @model_name_underscore %>.id), method: "delete", data: { turbo_method: :delete, turbo_confirm: "Are you sure?" }, class: "block text-sm antialiased font-medium leading-normal text-red-400") %>
-            <%% end %>
-<% end -%>
-          </td>
+          </th>
+  <% end -%>
+          <th class="p-4 border-b border-blue-gray-100 bg-blue-gray-50">
+            <p class="block text-sm antialiased font-normal leading-none text-blue-gray-900 opacity-70">
+              Action
+            </p>
+          </th>
         </tr>
-      <%% end %>
-    </tbody>
-  </table>
-  <%%= render partial: "layouts/pagination", locals: { records: <%= @model_name_plural %> } %>
+      </thead>
+      <tbody>
+        <%% <%= @model_name_plural %>.each do |<%= @model_name_underscore %>| %>
+          <tr>
+  <% @columns.each do |column| -%>
+            <td class="p-4 border-b border-blue-gray-50">
+              <p class="block text-sm antialiased font-normal leading-normal text-blue-gray-900">
+  <% if column["type"] == "reference" -%>
+                <%%= <%= @model_name_underscore %>.<%= column["name"] %>.<%= column["display_field"] %> %>
+  <% elsif column["formatter"] == "money" -%>
+                <%%= <%= @model_name_underscore %>.<%= column["display_name"] %>.format %>
+  <% else -%>
+                <%%= <%= @model_name_underscore %>.<%= column["name"] %> %>
+  <% end -%>
+              </p>
+            </td>
+  <% end -%>
+            <td class="p-4 border-b border-blue-gray-50">
+              <%%= link_to("View", <%= @model_name_underscore %>_path(<%= @model_name_underscore %>.id), class: "block text-sm antialiased font-medium leading-normal text-blue-400") %>
+  <% if @json_config["skip_authorization"] -%>
+              <%%= link_to("Edit", edit_<%= @model_name_underscore %>_path(<%= @model_name_underscore %>.id), class: "block text-sm antialiased font-medium leading-normal text-blue-400") %>
+  <% else -%>
+              <%% if policy(<%= @model_name_underscore %>).edit? %>
+  <% if @json_config["use_modals_for_forms"] -%>
+                <button
+                  class="text-sm antialiased font-medium leading-normal text-blue-400 cursor-pointer"
+                  data-action="click-><%= @model_name_underscore.dasherize.pluralize %>-index#edit<%= @model_name %>"
+                  data-<%= @model_name_underscore.dasherize.pluralize %>-index-id-param=<%%= <%= @model_name_underscore %>.id %>
+                >
+                  Edit
+                </button>
+  <% else -%>
+                <%%= link_to("Edit", edit_<%= @model_name_underscore %>_path(<%= @model_name_underscore %>.id), class: "block text-sm antialiased font-medium leading-normal text-blue-400") %>
+  <% end -%>
+              <%% end %>
+  <% end -%>
+  <% if @json_config["skip_authorization"] -%>
+              <%%= link_to("Delete", <%= @model_name_underscore %>_path(<%= @model_name_underscore %>.id), method: "delete", data: { turbo_method: :delete, turbo_confirm: "Are you sure?" }, class: "block text-sm antialiased font-medium leading-normal text-red-400") %>
+  <% else -%>
+              <%% if policy(<%= @model_name_underscore %>).destroy? %>
+                <%%= link_to("Delete", <%= @model_name_underscore %>_path(<%= @model_name_underscore %>.id), method: "delete", data: { turbo_method: :delete, turbo_confirm: "Are you sure?" }, class: "block text-sm antialiased font-medium leading-normal text-red-400") %>
+              <%% end %>
+  <% end -%>
+            </td>
+          </tr>
+        <%% end %>
+      </tbody>
+    </table>
+
+    <%%= render partial: "layouts/pagination", locals: { records: <%= @model_name_plural %> } %>
+  </div>
+
+  <% if @json_config["use_modals_for_forms"] -%>
+    <div class="hidden">
+      <%%=
+        render(
+          partial: 'form',
+          locals: {
+            <%= @model_name_underscore %>: <%= @model_name %>.new,
+            form_data: { <%= @model_name_plural %>_index_target: "<%= @model_name_camel %>Form" },
+            submit_data: { action: "click-><%= @model_name_underscore.dasherize.pluralize %>-index#save<%= @model_name %>" }
+          }
+        )
+      %>
+    </div>
+
+    <%= render partial: "layouts/modal", locals: { close_action: "work-orders-index#closeModal" } %>
+  <% end -%>
 </div>
