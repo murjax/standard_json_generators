@@ -5,6 +5,18 @@
     data: local_assigns[:form_data],
     class: "w-3/4"
   ) do |form| %>
+<% @columns.select { |column| column["type"] == "date"}.map do |column| -%>
+    <div class="flex flex-col mb-4">
+      <%%= form.label :<%= column["display_name"] || column["name"] %>, required: true, class: "block mb-2 text-sm font-medium text-gray-900" %>
+      <%%= form.date_field :<%= column["display_name"] || column["name"] %>, class: "border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" %>
+    </div>
+<% end -%>
+<% @columns.select { |column| column["type"] == "datetime"}.map do |column| -%>
+    <div class="flex flex-col mb-4">
+      <%%= form.label :<%= column["display_name"] || column["name"] %>, required: true, class: "block mb-2 text-sm font-medium text-gray-900" %>
+      <%%= form.datetime_field :<%= column["display_name"] || column["name"] %>, class: "border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" %>
+    </div>
+<% end -%>
 <% @columns.select { |column| ["integer", "string"].include?(column["type"]) }.map do |column| -%>
     <div class="flex flex-col mb-4">
       <%%= form.label :<%= column["display_name"] || column["name"] %>, required: true, class: "block mb-2 text-sm font-medium text-gray-900" %>
