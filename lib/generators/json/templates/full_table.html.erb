@@ -106,6 +106,6 @@
       %>
     </div>
 
-    <%= render partial: "layouts/modal", locals: { close_action: "work-orders-index#closeModal" } %>
+    <%%= render partial: "layouts/modal", locals: { close_action: "<%= @model_name_underscore.dasherize.pluralize %>-index#closeModal" } %>
   <% end -%>
 </div>

@@ -115,6 +115,15 @@ class JsonGenerator < JsonGeneratorCore::Generators::JsonBase
     )
   end
 
+  def create_modal_partial
+    return unless @json_config.dig("enabled_generators", "modal_partial")
+
+    template_with_markdown(
+      template_name: "modal.html.erb",
+      path: "app/views/layouts/modal.html.erb"
+    )
+  end
+
   def create_cypress_tests
     return unless @json_config.dig("enabled_generators", "cypress")
 
