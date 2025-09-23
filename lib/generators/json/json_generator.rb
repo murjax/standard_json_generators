@@ -120,7 +120,7 @@ class JsonGenerator < JsonGeneratorCore::Generators::JsonBase
 
     template_with_markdown(
       template_name: "modal.html.erb",
-      path: "app/views/layouts/modal.html.erb"
+      path: "app/views/layouts/_modal.html.erb"
     )
   end
 

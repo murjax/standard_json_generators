@@ -60,7 +60,17 @@
             <td class="p-4 border-b border-blue-gray-50">
               <%%= link_to("View", <%= @model_name_underscore %>_path(<%= @model_name_underscore %>.id), class: "block text-sm antialiased font-medium leading-normal text-blue-400") %>
   <% if @json_config["skip_authorization"] -%>
-              <%%= link_to("Edit", edit_<%= @model_name_underscore %>_path(<%= @model_name_underscore %>.id), class: "block text-sm antialiased font-medium leading-normal text-blue-400") %>
+  <% if @json_config["use_modals_for_forms"] -%>
+              <button
+                class="text-sm antialiased font-medium leading-normal text-blue-400 cursor-pointer"
+                data-action="click-><%= @model_name_underscore.dasherize.pluralize %>-index#edit<%= @model_name %>"
+                data-<%= @model_name_underscore.dasherize.pluralize %>-index-id-param=<%%= <%= @model_name_underscore %>.id %>
+              >
+                Edit
+              </button>
+  <% else -%>
+            <%%= link_to("Edit", edit_<%= @model_name_underscore %>_path(<%= @model_name_underscore %>.id), class: "block text-sm antialiased font-medium leading-normal text-blue-400") %>
+  <% end -%>
   <% else -%>
               <%% if policy(<%= @model_name_underscore %>).edit? %>
   <% if @json_config["use_modals_for_forms"] -%>

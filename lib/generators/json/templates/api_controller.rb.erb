@@ -1,6 +1,8 @@
 class Api::<%= @model_name.pluralize %>Controller < ApiController
   def index
+<% unless @json_config["skip_authorization"] -%>
     authorize <%= @model_name %>
+<% end -%>
 
     <%= @model_name_plural %> = BaseIndexFilter
       .new(records: <%= @model_name %>, params:, sort_field: :<%= @json_config["primary_field"] %>, search_field: :<%= @json_config["primary_field"] %>)
@@ -11,13 +13,17 @@ class Api::<%= @model_name.pluralize %>Controller < ApiController
 
   def show
     <%= @model_name_underscore %> = <%= @model_name %>.find(params[:id])
+<% unless @json_config["skip_authorization"] -%>
     authorize <%= @model_name_underscore %>
+<% end -%>
 
     render json: <%= @model_name_underscore %>.attributes
   end
 
   def create
+<% unless @json_config["skip_authorization"] -%>
     authorize <%= @model_name %>
+<% end -%>
 
     <%= @model_name_underscore %> = <%= @model_name %>.new(permitted_params)
 
@@ -32,7 +38,9 @@ class Api::<%= @model_name.pluralize %>Controller < ApiController
 
   def update
     <%= @model_name_underscore %> = <%= @model_name %>.find(params[:id])
+<% unless @json_config["skip_authorization"] -%>
     authorize <%= @model_name_underscore %>
+<% end -%>
 
     <%= @model_name_underscore %>.assign_attributes(permitted_params)
 
@@ -47,7 +55,9 @@ class Api::<%= @model_name.pluralize %>Controller < ApiController
 
   def destroy
     <%= @model_name_underscore %> = <%= @model_name %>.find(params[:id])
+<% unless @json_config["skip_authorization"] -%>
     authorize <%= @model_name_underscore %>
+<% end -%>
 
     <%= @model_name_underscore %>.destroy
     head :no_content
